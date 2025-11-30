@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     snitchdns = {
-      source = "EinDev/snitchdns"
+      source  = "EinDev/snitchdns"
       version = "~> 1.0"
     }
   }
@@ -107,7 +107,7 @@ resource "snitchdns_record" "api" {
   active  = true
   cls     = "IN"
   type    = "A"
-  ttl     = 300  # Lower TTL for API
+  ttl     = 300 # Lower TTL for API
 
   data = {
     address = var.api_server_ip

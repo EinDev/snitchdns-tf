@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     snitchdns = {
-      source = "EinDev/snitchdns"
+      source  = "EinDev/snitchdns"
       version = "~> 1.0"
     }
   }
@@ -13,7 +13,7 @@ terraform {
 # export SNITCHDNS_API_KEY="your-api-key"
 provider "snitchdns" {
   api_url = "http://localhost:8000"
-  api_key = "your-api-key-here"  # Replace with your actual API key
+  api_key = "your-api-key-here" # Replace with your actual API key
 }
 
 # Create a simple DNS zone

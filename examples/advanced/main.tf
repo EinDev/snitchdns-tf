@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     snitchdns = {
-      source = "EinDev/snitchdns"
+      source  = "EinDev/snitchdns"
       version = "~> 1.0"
     }
   }
@@ -55,7 +55,7 @@ resource "snitchdns_record" "lb_records" {
   active  = true
   cls     = "IN"
   type    = "A"
-  ttl     = 300  # Low TTL for load balancing
+  ttl     = 300 # Low TTL for load balancing
 
   data = {
     address = each.value.ip
@@ -64,7 +64,7 @@ resource "snitchdns_record" "lb_records" {
 
 # Regex zone for catching subdomain patterns
 resource "snitchdns_zone" "regex_zone" {
-  domain     = ".*\\.test\\.${local.base_domain}"  # Matches *.test.example.com
+  domain     = ".*\\.test\\.${local.base_domain}" # Matches *.test.example.com
   active     = true
   catch_all  = true
   forwarding = false
@@ -76,7 +76,7 @@ resource "snitchdns_zone" "regex_zone" {
 resource "snitchdns_zone" "honeypot" {
   domain     = "honeypot.${local.base_domain}"
   active     = true
-  catch_all  = true  # Catch all subdomains
+  catch_all  = true # Catch all subdomains
   forwarding = false
   regex      = false
   tags       = ["security", "monitoring", "honeypot"]
@@ -88,7 +88,7 @@ resource "snitchdns_record" "canary" {
   active  = true
   cls     = "IN"
   type    = "A"
-  ttl     = 60  # Very low TTL for canary
+  ttl     = 60 # Very low TTL for canary
 
   # Start with old version
   data = {
