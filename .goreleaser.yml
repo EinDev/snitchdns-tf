@@ -1,0 +1,108 @@
+# This is an example .goreleaser.yml file with some sensible defaults.
+# Make sure to check the documentation at https://goreleaser.com
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - env:
+      - CGO_ENABLED=0
+    mod_timestamp: '{{ .CommitTimestamp }}'
+    flags:
+      - -trimpath
+    ldflags:
+      - '-s -w -X main.version={{.Version}} -X main.commit={{.Commit}}'
+    goos:
+      - freebsd
+      - windows
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - '386'
+      - arm
+      - arm64
+    ignore:
+      - goos: darwin
+        goarch: '386'
+    binary: '{{ .ProjectName }}_v{{ .Version }}'
+
+archives:
+  - format: zip
+    name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
+
+checksum:
+  name_template: '{{ .ProjectName }}_{{ .Version }}_SHA256SUMS'
+  algorithm: sha256
+
+signs:
+  - artifacts: checksum
+    args:
+      - "--batch"
+      - "--local-user"
+      - "{{ .Env.GPG_FINGERPRINT }}"
+      - "--output"
+      - "${signature}"
+      - "--detach-sign"
+      - "${artifact}"
+
+release:
+  draft: false
+  replace_existing_draft: true
+  prerelease: auto
+  name_template: "{{.ProjectName}}-v{{.Version}}"
+  header: |
+    ## SnitchDNS Terraform Provider {{.Version}}
+
+    For documentation and usage examples, see [README.md](https://github.com/EinDev/snitchdns-tf/blob/main/README.md)
+
+  footer: |
+    ## Installation
+
+    ### Terraform 0.13+
+
+    ```hcl
+    terraform {
+      required_providers {
+        snitchdns = {
+          source  = "EinDev/snitchdns"
+          version = "~> {{.Version}}"
+        }
+      }
+    }
+    ```
+
+    ### Manual Installation
+
+    1. Download the appropriate binary for your platform
+    2. Extract the archive
+    3. Move the binary to `~/.terraform.d/plugins/`
+
+    ## Changelog
+
+    See [CHANGELOG.md](https://github.com/EinDev/snitchdns-tf/blob/main/CHANGELOG.md) for details.
+
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^chore:'
+      - typo
+  groups:
+    - title: 'New Features'
+      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
+      order: 0
+    - title: 'Bug Fixes'
+      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
+      order: 1
+    - title: 'Performance Improvements'
+      regexp: '^.*?perf(\([[:word:]]+\))??!?:.+$'
+      order: 2
+    - title: 'Documentation'
+      regexp: '^.*?docs(\([[:word:]]+\))??!?:.+$'
+      order: 3
+    - title: 'Other Changes'
+      order: 999

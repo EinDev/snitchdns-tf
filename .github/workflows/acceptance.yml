@@ -1,0 +1,78 @@
+name: Acceptance Tests
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+  schedule:
+    # Run nightly at 2 AM UTC
+    - cron: '0 2 * * *'
+
+jobs:
+  acceptance:
+    name: Terraform Acceptance Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix:
+        terraform:
+          - '1.0.*'
+          - '1.5.*'
+          - '1.9.*'
+
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.21'
+        cache: true
+
+    - name: Install Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ matrix.terraform }}
+        terraform_wrapper: false
+
+    - name: Install dependencies
+      run: go mod download
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Run acceptance tests
+      run: |
+        export TF_ACC=1
+        go test -v -timeout 30m ./internal/provider/... -coverprofile=coverage-acceptance.txt
+      env:
+        TESTCONTAINERS_RYUK_DISABLED: false
+
+    - name: Upload acceptance test coverage
+      uses: codecov/codecov-action@v4
+      if: matrix.terraform == '1.9.*'
+      with:
+        file: ./coverage-acceptance.txt
+        flags: acceptance
+        name: codecov-acceptance
+
+  terraform-fmt:
+    name: Terraform Format Check
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v4
+
+    - name: Install Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: latest
+
+    - name: Check Terraform formatting in examples
+      run: |
+        terraform fmt -check -recursive examples/

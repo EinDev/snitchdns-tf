@@ -1,0 +1,10 @@
+# Copy this file to terraform.tfvars and update with your actual values
+
+snitchdns_url = "http://localhost:8000"
+snitchdns_key = "your-api-key-here"
+
+domain = "example.com"
+
+web_server_ip  = "192.168.1.100"
+mail_server_ip = "192.168.1.101"
+api_server_ip  = "192.168.1.102"
