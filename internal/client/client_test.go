@@ -13,7 +13,7 @@ import (
 func TestRetryLogic(t *testing.T) {
 	attempts := atomic.Int32{}
 
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		count := attempts.Add(1)
 		if count < 3 {
 			// Fail the first 2 attempts with 503 Service Unavailable
@@ -49,7 +49,7 @@ func TestRetryLogic(t *testing.T) {
 func TestRetryExhausted(t *testing.T) {
 	attempts := atomic.Int32{}
 
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		attempts.Add(1)
 		w.WriteHeader(http.StatusServiceUnavailable)
 	}))
@@ -75,7 +75,7 @@ func TestRetryExhausted(t *testing.T) {
 func TestNoRetryOn4xx(t *testing.T) {
 	attempts := atomic.Int32{}
 
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		attempts.Add(1)
 		w.WriteHeader(http.StatusNotFound)
 	}))
@@ -121,7 +121,7 @@ func TestUserAgentHeader(t *testing.T) {
 
 // TestContextTimeout tests that context timeout is respected
 func TestContextTimeout(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		// Delay longer than the context timeout
 		time.Sleep(200 * time.Millisecond)
 		w.WriteHeader(http.StatusOK)
@@ -140,7 +140,7 @@ func TestContextTimeout(t *testing.T) {
 
 // TestDebugLogging tests that debug logging can be enabled
 func TestDebugLogging(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"id": 1, "domain": "example.com", "active": true, "catch_all": false, "forwarding": false, "regex": false}`))
 	}))
@@ -163,7 +163,7 @@ func TestExponentialBackoff(t *testing.T) {
 	attempts := atomic.Int32{}
 	var timestamps []time.Time
 
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		timestamps = append(timestamps, time.Now())
 		count := attempts.Add(1)
 		if count < 4 {

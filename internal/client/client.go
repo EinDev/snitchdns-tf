@@ -1,13 +1,15 @@
+// Package client provides an HTTP client for the SnitchDNS API with retry logic and timeout support.
 package client
 
 import (
 	"bytes"
 	"context"
+	"crypto/rand"
+	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"io"
 	"math"
-	"math/rand"
 	"net/http"
 	"time"
 )
@@ -122,7 +124,12 @@ func (c *Client) executeRequest(ctx context.Context, method, path string, jsonDa
 	if err != nil {
 		return nil, 0, fmt.Errorf("failed to execute request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if closeErr := resp.Body.Close(); closeErr != nil {
+			// Log the error but don't override the main error
+			_ = closeErr
+		}
+	}()
 
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -142,11 +149,24 @@ func (c *Client) calculateBackoff(attempt int) time.Duration {
 		backoff = float64(c.RetryWaitMax)
 	}
 
-	// Add jitter (±25%)
+	// Add jitter (±25%) using crypto/rand for security
 	jitter := backoff * 0.25
-	backoff = backoff - jitter + (rand.Float64() * jitter * 2)
+	randomFactor := secureRandomFloat()
+	backoff = backoff - jitter + (randomFactor * jitter * 2)
 
 	return time.Duration(backoff)
+}
+
+// secureRandomFloat returns a cryptographically secure random float64 between 0 and 1
+func secureRandomFloat() float64 {
+	var b [8]byte
+	_, err := rand.Read(b[:])
+	if err != nil {
+		// Fallback to using timestamp if crypto/rand fails (should never happen)
+		return float64(time.Now().UnixNano()%1000) / 1000.0
+	}
+	// Convert bytes to uint64 and normalize to [0, 1)
+	return float64(binary.BigEndian.Uint64(b[:])) / float64(1<<64)
 }
 
 // Zone represents a DNS zone
@@ -243,17 +263,17 @@ func (c *Client) DeleteZone(id string) error {
 
 // Record represents a DNS record
 type Record struct {
-	ID               int    `json:"id,omitempty"`
-	ZoneID           int    `json:"zone_id,omitempty"`
-	Active           bool   `json:"active"`
-	Class            string `json:"cls"`
-	Type             string `json:"type"`
-	TTL              int    `json:"ttl"`
-	DataRaw          string `json:"data"`
-	IsConditional    bool   `json:"is_conditional"`
-	ConditionalCount int    `json:"conditional_count,omitempty"`
-	ConditionalLimit int    `json:"conditional_limit,omitempty"`
-	ConditionalReset bool   `json:"conditional_reset,omitempty"`
+	ID                 int    `json:"id,omitempty"`
+	ZoneID             int    `json:"zone_id,omitempty"`
+	Active             bool   `json:"active"`
+	Class              string `json:"cls"`
+	Type               string `json:"type"`
+	TTL                int    `json:"ttl"`
+	DataRaw            string `json:"data"`
+	IsConditional      bool   `json:"is_conditional"`
+	ConditionalCount   int    `json:"conditional_count,omitempty"`
+	ConditionalLimit   int    `json:"conditional_limit,omitempty"`
+	ConditionalReset   bool   `json:"conditional_reset,omitempty"`
 	ConditionalDataRaw string `json:"conditional_data,omitempty"`
 
 	// Parsed versions (not from JSON)
@@ -277,16 +297,16 @@ type CreateRecordRequest struct {
 
 // UpdateRecordRequest is the request body for updating a record
 type UpdateRecordRequest struct {
-	Active           *bool                   `json:"active,omitempty"`
-	Class            *string                 `json:"class,omitempty"`
-	Type             *string                 `json:"type,omitempty"`
-	TTL              *int                    `json:"ttl,omitempty"`
-	Data             map[string]interface{}  `json:"data,omitempty"`
-	IsConditional    *bool                   `json:"is_conditional,omitempty"`
-	ConditionalCount *int                    `json:"conditional_count,omitempty"`
-	ConditionalLimit *int                    `json:"conditional_limit,omitempty"`
-	ConditionalReset *bool                   `json:"conditional_reset,omitempty"`
-	ConditionalData  map[string]interface{}  `json:"conditional_data,omitempty"`
+	Active           *bool                  `json:"active,omitempty"`
+	Class            *string                `json:"class,omitempty"`
+	Type             *string                `json:"type,omitempty"`
+	TTL              *int                   `json:"ttl,omitempty"`
+	Data             map[string]interface{} `json:"data,omitempty"`
+	IsConditional    *bool                  `json:"is_conditional,omitempty"`
+	ConditionalCount *int                   `json:"conditional_count,omitempty"`
+	ConditionalLimit *int                   `json:"conditional_limit,omitempty"`
+	ConditionalReset *bool                  `json:"conditional_reset,omitempty"`
+	ConditionalData  map[string]interface{} `json:"conditional_data,omitempty"`
 }
 
 // CreateRecord creates a new DNS record
