@@ -1,0 +1,40 @@
+# Terraform Development Overrides Configuration
+#
+# This file allows you to use a locally built provider instead of downloading
+# from the Terraform Registry. This is useful for development and testing.
+#
+# Usage:
+#   1. Build and install the provider locally:
+#      make install
+#
+#   2. Copy this file to your home directory:
+#      cp .terraformrc.example ~/.terraformrc
+#
+#   3. Update the path below to match your system
+#
+#   4. Run terraform commands as normal:
+#      cd examples/basic
+#      terraform init
+#      terraform plan
+#
+# IMPORTANT: With dev_overrides enabled, Terraform will skip version checks
+# and use your local build instead. Remove or comment out this configuration
+# when you want to use the published provider from the registry.
+
+provider_installation {
+  # Use the locally built provider instead of downloading from the registry
+  dev_overrides {
+    "registry.terraform.io/EinDev/snitchdns" = "/home/YOUR_USERNAME/.terraform.d/plugins/registry.terraform.io/EinDev/snitchdns/dev/linux_amd64"
+  }
+
+  # For all other providers, use the registry directly
+  direct {}
+}
+
+# Platform-specific paths:
+#
+# Linux:   ~/.terraform.d/plugins/registry.terraform.io/EinDev/snitchdns/dev/linux_amd64
+# macOS:   ~/.terraform.d/plugins/registry.terraform.io/EinDev/snitchdns/dev/darwin_amd64
+# Windows: %APPDATA%/terraform.d/plugins/registry.terraform.io/EinDev/snitchdns/dev/windows_amd64
+#
+# The exact path is shown after running `make install`

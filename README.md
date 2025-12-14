@@ -182,6 +182,69 @@ This provider is developed using Test-Driven Development (TDD) with testcontaine
 - golangci-lint v2.7.2 (install with `make install-tools`)
 - Make (optional, for convenience commands)
 
+### Local Development Setup
+
+To develop and test the provider locally without publishing to the registry:
+
+#### 1. Install the Provider Locally
+
+```bash
+# Build and install the provider to your local plugin directory
+make install
+```
+
+This will:
+- Build the provider binary
+- Install it to `~/.terraform.d/plugins/`
+- Display the configuration needed for development overrides
+
+#### 2. Configure Development Overrides
+
+Create or update `~/.terraformrc` with the path shown by `make install`:
+
+```hcl
+provider_installation {
+  dev_overrides {
+    "registry.terraform.io/EinDev/snitchdns" = "/home/YOUR_USERNAME/.terraform.d/plugins/registry.terraform.io/EinDev/snitchdns/dev/linux_amd64"
+  }
+  direct {}
+}
+```
+
+**Platform-specific paths:**
+- **Linux**: `~/.terraform.d/plugins/registry.terraform.io/EinDev/snitchdns/dev/linux_amd64`
+- **macOS**: `~/.terraform.d/plugins/registry.terraform.io/EinDev/snitchdns/dev/darwin_amd64`
+- **Windows**: `%APPDATA%/terraform.d/plugins/registry.terraform.io/EinDev/snitchdns/dev/windows_amd64`
+
+Alternatively, copy the example file:
+```bash
+cp .terraformrc.example ~/.terraformrc
+# Edit ~/.terraformrc and update the path for your system
+```
+
+#### 3. Test Your Changes
+
+```bash
+cd examples/basic
+terraform init   # Will use your local build
+terraform plan
+terraform apply
+```
+
+**Important**: With `dev_overrides` enabled:
+- Terraform will skip version checks
+- You'll see a warning about using an overridden provider
+- The provider will NOT be downloaded from the registry
+
+#### 4. Disable Development Overrides
+
+When you want to use the published provider instead:
+
+```bash
+# Rename or remove the dev overrides
+mv ~/.terraformrc ~/.terraformrc.disabled
+```
+
 ### Running Tests
 
 ```bash
@@ -207,9 +270,10 @@ go test -cover ./...
 # Build the provider binary
 make build
 
-# Install locally for testing
+# Install locally for development (see Local Development Setup above)
 make install
 ```
+
 
 ### Test Container
 
@@ -301,6 +365,7 @@ See [`.github/workflows/`](.github/workflows/) for workflow configurations.
 │   └── entrypoint.sh
 ├── .github/
 │   └── workflows/            # CI/CD pipelines
+├── .terraformrc.example      # Local development overrides
 ├── Makefile                  # Development commands
 ├── CHANGELOG.md              # Version history
 └── README.md                 # This file
