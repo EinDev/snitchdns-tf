@@ -91,7 +91,8 @@ func (r *ZoneResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	ctx, cancel := context.WithTimeout(ctx, readTimeout)
+	var cancel context.CancelFunc
+	ctx, cancel = context.WithTimeout(ctx, readTimeout)
 	defer cancel()
 
 	// Get zone from API
@@ -154,7 +155,8 @@ func (r *ZoneResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	ctx, cancel := context.WithTimeout(ctx, updateTimeout)
+	var cancel context.CancelFunc
+	ctx, cancel = context.WithTimeout(ctx, updateTimeout)
 	defer cancel()
 
 	// Convert tags list to comma-separated string
@@ -234,11 +236,12 @@ func (r *ZoneResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	ctx, cancel := context.WithTimeout(ctx, deleteTimeout)
+	var cancel context.CancelFunc
+	ctx, cancel = context.WithTimeout(ctx, deleteTimeout)
 	defer cancel()
 
 	// Delete zone via API
-	err := r.client.DeleteZone(data.ID.ValueString())
+	err := r.client.DeleteZoneWithContext(ctx, data.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error deleting zone",

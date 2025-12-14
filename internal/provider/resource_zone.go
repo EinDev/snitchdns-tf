@@ -19,6 +19,7 @@ import (
 var _ resource.Resource = &ZoneResource{}
 var _ resource.ResourceWithImportState = &ZoneResource{}
 
+// NewZoneResource creates a new Zone resource.
 func NewZoneResource() resource.Resource {
 	return &ZoneResource{}
 }
@@ -44,11 +45,13 @@ type ZoneResourceModel struct {
 	Timeouts   timeouts.Value `tfsdk:"timeouts"`
 }
 
-func (r *ZoneResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+// Metadata sets the resource type name.
+func (r *ZoneResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_zone"
 }
 
-func (r *ZoneResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+// Schema defines the resource schema.
+func (r *ZoneResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Manages a DNS zone in SnitchDNS. Zones are containers for DNS records and can be configured with various options like catch-all, forwarding, and regex matching.",
 
@@ -116,7 +119,8 @@ func (r *ZoneResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 	}
 }
 
-func (r *ZoneResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+// Configure adds the provider-configured client to the resource.
+func (r *ZoneResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}

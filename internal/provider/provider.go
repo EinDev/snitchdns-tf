@@ -33,11 +33,13 @@ type SnitchDNSProviderModel struct {
 	APIKey string `tfsdk:"api_key"`
 }
 
+// Metadata sets the provider type name and version.
 func (p *SnitchDNSProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
 	resp.TypeName = "snitchdns"
 	resp.Version = p.version
 }
 
+// Schema defines the provider-level schema for configuration data.
 func (p *SnitchDNSProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Provider for managing SnitchDNS resources. Configure with API endpoint and authentication key.",
@@ -112,17 +114,20 @@ func (p *SnitchDNSProvider) Configure(ctx context.Context, req provider.Configur
 	resp.ResourceData = client
 }
 
-func (p *SnitchDNSProvider) Resources(ctx context.Context) []func() resource.Resource {
+// Resources returns the list of resources supported by this provider.
+func (p *SnitchDNSProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		NewZoneResource,
 		NewRecordResource,
 	}
 }
 
-func (p *SnitchDNSProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
+// DataSources returns the list of data sources supported by this provider.
+func (p *SnitchDNSProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{}
 }
 
+// New creates a new instance of the SnitchDNS provider.
 func New(version string, container *testcontainer.SnitchDNSContainer) func() provider.Provider {
 	return func() provider.Provider {
 		return &SnitchDNSProvider{

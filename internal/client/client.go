@@ -137,13 +137,10 @@ func (c *Client) executeRequest(ctx context.Context, method, path string, jsonDa
 
 	respBody, err = io.ReadAll(resp.Body)
 	if err != nil {
-		statusCode = resp.StatusCode
-		err = fmt.Errorf("failed to read response body: %w", err)
-		return
+		return nil, resp.StatusCode, fmt.Errorf("failed to read response body: %w", err)
 	}
 
-	statusCode = resp.StatusCode
-	return
+	return respBody, resp.StatusCode, nil
 }
 
 // calculateBackoff calculates the backoff duration with exponential backoff and jitter
@@ -264,7 +261,12 @@ func (c *Client) UpdateZone(id string, req UpdateZoneRequest) (*Zone, error) {
 
 // DeleteZone deletes a zone
 func (c *Client) DeleteZone(id string) error {
-	_, err := c.doRequest("DELETE", fmt.Sprintf("/zones/%s", id), nil)
+	return c.DeleteZoneWithContext(context.Background(), id)
+}
+
+// DeleteZoneWithContext deletes a zone with context
+func (c *Client) DeleteZoneWithContext(ctx context.Context, id string) error {
+	_, err := c.doRequestWithContext(ctx, "DELETE", fmt.Sprintf("/zones/%s", id), nil)
 	return err
 }
 
@@ -405,6 +407,11 @@ func (c *Client) UpdateRecord(zoneID, recordID string, req UpdateRecordRequest) 
 
 // DeleteRecord deletes a DNS record
 func (c *Client) DeleteRecord(zoneID, recordID string) error {
-	_, err := c.doRequest("DELETE", fmt.Sprintf("/zones/%s/records/%s", zoneID, recordID), nil)
+	return c.DeleteRecordWithContext(context.Background(), zoneID, recordID)
+}
+
+// DeleteRecordWithContext deletes a DNS record with context
+func (c *Client) DeleteRecordWithContext(ctx context.Context, zoneID, recordID string) error {
+	_, err := c.doRequestWithContext(ctx, "DELETE", fmt.Sprintf("/zones/%s/records/%s", zoneID, recordID), nil)
 	return err
 }

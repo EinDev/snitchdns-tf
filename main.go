@@ -1,3 +1,4 @@
+// Package main provides the Terraform provider for SnitchDNS.
 package main
 
 import (
@@ -10,7 +11,7 @@ import (
 )
 
 // version is set by the goreleaser at build time
-var version string = "dev"
+var version = "dev"
 
 func main() {
 	var debug bool

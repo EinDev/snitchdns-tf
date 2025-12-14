@@ -20,6 +20,7 @@ import (
 var _ resource.Resource = &RecordResource{}
 var _ resource.ResourceWithImportState = &RecordResource{}
 
+// NewRecordResource creates a new Record resource.
 func NewRecordResource() resource.Resource {
 	return &RecordResource{}
 }
@@ -46,11 +47,13 @@ type RecordResourceModel struct {
 	Timeouts         timeouts.Value `tfsdk:"timeouts"`
 }
 
-func (r *RecordResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+// Metadata sets the resource type name.
+func (r *RecordResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_record"
 }
 
-func (r *RecordResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+// Schema defines the resource schema.
+func (r *RecordResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Manages a DNS record within a SnitchDNS zone. Records define the actual DNS responses for queries and support all standard DNS record types (A, AAAA, CNAME, MX, TXT, etc.) as well as conditional responses.",
 
@@ -140,7 +143,8 @@ func (r *RecordResource) Schema(ctx context.Context, req resource.SchemaRequest,
 	}
 }
 
-func (r *RecordResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+// Configure adds the provider-configured client to the resource.
+func (r *RecordResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
