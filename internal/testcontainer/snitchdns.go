@@ -1,3 +1,4 @@
+// Package testcontainer provides Docker container setup for SnitchDNS testing.
 package testcontainer
 
 import (
@@ -12,7 +13,9 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
+// Default configuration values for SnitchDNS test containers.
 const (
+	// DefaultUsername is the default admin username for test containers.
 	DefaultUsername = "testadmin"
 	DefaultPassword = "password123"
 	HTTPPort        = "80/tcp"
@@ -176,7 +179,11 @@ func (c *SnitchDNSContainer) Logs(ctx context.Context) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer reader.Close()
+	defer func() {
+		if closeErr := reader.Close(); closeErr != nil {
+			_ = closeErr
+		}
+	}()
 
 	logs, err := io.ReadAll(reader)
 	if err != nil {

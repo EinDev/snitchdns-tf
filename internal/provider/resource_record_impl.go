@@ -29,7 +29,8 @@ func (r *RecordResource) Create(ctx context.Context, req resource.CreateRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	ctx, cancel := context.WithTimeout(ctx, createTimeout)
+	var cancel context.CancelFunc
+	ctx, cancel = context.WithTimeout(ctx, createTimeout)
 	defer cancel()
 
 	// Convert data map to map[string]interface{}
@@ -133,7 +134,8 @@ func (r *RecordResource) Read(ctx context.Context, req resource.ReadRequest, res
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	ctx, cancel := context.WithTimeout(ctx, readTimeout)
+	var cancel context.CancelFunc
+	ctx, cancel = context.WithTimeout(ctx, readTimeout)
 	defer cancel()
 
 	tflog.Debug(ctx, "Reading record", map[string]any{
@@ -220,7 +222,8 @@ func (r *RecordResource) Update(ctx context.Context, req resource.UpdateRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	ctx, cancel := context.WithTimeout(ctx, updateTimeout)
+	var cancel context.CancelFunc
+	ctx, cancel = context.WithTimeout(ctx, updateTimeout)
 	defer cancel()
 
 	// Convert data map to map[string]interface{}
@@ -334,11 +337,12 @@ func (r *RecordResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	ctx, cancel := context.WithTimeout(ctx, deleteTimeout)
+	var cancel context.CancelFunc
+	ctx, cancel = context.WithTimeout(ctx, deleteTimeout)
 	defer cancel()
 
 	// Delete record via API
-	err := r.client.DeleteRecord(data.ZoneID.ValueString(), data.ID.ValueString())
+	err := r.client.DeleteRecordWithContext(ctx, data.ZoneID.ValueString(), data.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error deleting record",
